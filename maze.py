@@ -18,9 +18,7 @@ class Maze:
         self._create_cells()
         self._break_entrance_and_exit()
         self._break_walls_r(0, 0)
-        
-            
-        
+        self._reset_cells_visited
 
     def _create_cells(self):
         for i in range(self._num_cols):
@@ -56,54 +54,49 @@ class Maze:
         self._cells[-1][-1].has_bottom_wall = False
         self._draw_cell(len(self._cells) - 1, len(self._cells[0]) - 1)
 
-    def _is_in_bounds(self, i, j):
-        return 0 <= i < len(self._cells) and 0 <= j < len(self._cells[0])
-
     def _break_walls_r(self, i, j):
         current_cell = self._cells[i][j]
         current_cell.visited = True
         while True:
             to_visit = []
-            if self._is_in_bounds(i + 1, j):
-                if self._cells[i+1][j].visited is False:
-                    to_visit.append((i + 1, j))
+            if i < self._num_cols - 1 and self._cells[i + 1][j].visited is False:
+                to_visit.append((i + 1, j))
 
-            if self._is_in_bounds(i, j + 1):
-                if self._cells[i][j+1].visited is False:
+            if j < self._num_rows -1 and self._cells[i][j + 1].visited is False:
                     to_visit.append((i, j + 1))
 
-            if self._is_in_bounds(i - 1, j):
-                if self._cells[i-1][j].visited is False:
+            if i > 0 and self._cells[i - 1][j].visited is False:
                     to_visit.append((i - 1, j))
 
-            if self._is_in_bounds(i, j - 1):
-                if self._cells[i][j-1].visited is False:
+            if j > 0 and self._cells[i][j - 1].visited is False:
                     to_visit.append((i, j - 1))
 
             if len(to_visit) == 0:
-                return
-            else:
-                chosen_i , chosen_j = random.choice(to_visit)
-                chosen_cell = self._cells[chosen_i][chosen_j]
-
-                if chosen_i == i + 1 and chosen_j == j:
-                    current_cell.has_bottom_wall = False
-                    chosen_cell.has_top_wall = False
-
-                if chosen_i == i and chosen_j == j + 1:
-                    current_cell.has_right_wall = False
-                    chosen_cell.has_left_wall = False
-
-                if chosen_i == i - 1 and chosen_j == j:
-                    current_cell.has_top_wall = False
-                    chosen_cell.has_bottom_wall = False
-
-                if chosen_i == i and chosen_j == j - 1:
-                    current_cell.has_left_wall = False
-                    chosen_cell.has_right_wall = False
-                    
                 self._draw_cell(i, j)
-                self._draw_cell(chosen_i, chosen_j)
-                self._break_walls_r(chosen_i, chosen_j)
+                return
+                
+            direction = random.randrange(len(to_visit))
+            next = to_visit[direction]
 
+            if next[1] == j + 1:
+                current_cell.has_bottom_wall = False
+                self._cells[i][j + 1].has_top_wall = False
 
+            if next[0] == i + 1:
+                current_cell.has_right_wall = False
+                self._cells[i + 1][j].has_left_wall = False
+
+            if next[1] == j - 1:
+                current_cell.has_top_wall = False
+                self._cells[i][j - 1].has_bottom_wall = False
+
+            if next[0] == i - 1:
+                current_cell.has_left_wall = False
+                self._cells[i - 1][j].has_right_wall = False
+                    
+            self._break_walls_r(next[0], next[1])
+
+    def _reset_cells_visited(self):
+        for i in range(self._num_cols):
+            for j in range(self._num_rows):
+                self._cells[i][j].visited = False
